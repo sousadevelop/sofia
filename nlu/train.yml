@@ -1,0 +1,91 @@
+commands:
+  # Hora
+  - commmand:
+    input:  Que horas são?
+    entity: time
+    action: getTime
+  - commmand:
+    input:  Me digas horas.
+    entity: time
+    action: getTime
+  # Data
+  - commmand:
+    input:  Qual é a data de hoje?
+    entity: time
+    action: getDate
+  - commmand:
+    input:  Data de hoje.
+    entity: time
+    action: getDate
+  # Tempo
+  - commmand:
+    input:  Previsão do tempo
+    entity: weather
+    action: getWeather
+  - commmand:
+    input:  Como está o clima?
+    entity: weather
+    action: getWeather
+  # Open
+  - commmand:
+    input:  Abra o bloco de notas
+    entity: open
+    action: notepad
+  - commmand:
+    input:  Abrir bloco de notas
+    entity: open
+    action: notepad
+  - commmand:
+    input:  Abrir Google Chrome
+    entity: open
+    action: chrome
+  - commmand:
+    input:  Abra o google chrome
+    entity: open
+    action: chrome
+  - commmand:
+    input:  Abrir Google
+    entity: open
+    action: google
+  - commmand:
+    input:  Abra o Google
+    entity: open
+    action: google
+
+                              # Acessos recorrentes no Youtube
+  - commmand:
+    input:  Abrir Youtube
+    entity: open
+    action: youtube
+  - commmand:
+    input:  Abra o Youtube
+    entity: open
+    action: youtube
+                                # Canal Lofi
+  - commmand:
+    input:  Abrir radio lofi
+    entity: open
+    action: lofi
+  - commmand:
+    input:  Abra o canal lofi
+    entity: open
+    action: lofi
+                              # Redes sociais
+  - commmand:
+    input:  Abrir Linkedin
+    entity: open
+    action: linkedin
+  - commmand:
+    input:  Abra o Linkedin
+    entity: open
+    action: linkedin
+
+                              # FECHANDO
+  - commmand:
+    input:  Fechar bloco de notas
+    entity: close
+    action: notepad
+  - commmand:
+    input:  Fechando o bloco de notas
+    entity: close
+    action: notepad
