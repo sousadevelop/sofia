@@ -1,0 +1,10 @@
+open|google
+close|notepad
+time|getDate
+open|chrome
+weather|getWeather
+open|youtube
+open|notepad
+open|linkedin
+time|getTime
+open|lofi

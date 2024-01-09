@@ -2,90 +2,92 @@
 
 #!/usr/bin/env python3
 
-# prerequisites: as described in https://alphacephei.com/vosk/install and also python module `sounddevice` (simply run command `pip install sounddevice`)
-# Example usage using Dutch (nl) recognition model: `python test_microphone.py -m nl`
-# For more help run: `python test_microphone.py -h`
-
-import argparse
-import queue
-import sys
-import sounddevice as sd
-
 from vosk import Model, KaldiRecognizer
+import psutil, os
+import subprocess
+import pyaudio
+import pyttsx3
+import json
+import core
+from nlu.classifier import classify
+import webbrowser
 
-q = queue.Queue()
+# Síntese de fala
+engine = pyttsx3.init()
 
-def int_or_str(text):
-    """Helper function for argument parsing."""
-    try:
-        return int(text)
-    except ValueError:
-        return text
+voices = engine.getProperty('voices')
+engine.setProperty('voice', voices[-2].id)
 
-def callback(indata, frames, time, status):
-    """This is called (from a separate thread) for each audio block."""
-    if status:
-        print(status, file=sys.stderr)
-    q.put(bytes(indata))
+def speak(text):
+    engine.say(text)
+    engine.runAndWait()
 
-parser = argparse.ArgumentParser(add_help=False)
-parser.add_argument(
-    "-l", "--list-devices", action="store_true",
-    help="show list of audio devices and exit")
-args, remaining = parser.parse_known_args()
-if args.list_devices:
-    print(sd.query_devices())
-    parser.exit(0)
-parser = argparse.ArgumentParser(
-    description=__doc__,
-    formatter_class=argparse.RawDescriptionHelpFormatter,
-    parents=[parser])
-parser.add_argument(
-    "-f", "--filename", type=str, metavar="FILENAME",
-    help="audio file to store recording to")
-parser.add_argument(
-    "-d", "--device", type=int_or_str,
-    help="input device (numeric ID or substring)")
-parser.add_argument(
-    "-r", "--samplerate", type=int, help="sampling rate")
-parser.add_argument(
-    "-m", "--model", type=str, help="language model; e.g. en-us, fr, nl; default is en-us")
-args = parser.parse_args(remaining)
+def close_program(name):
+    for process in (process for process in psutil.process_iter() if process.name() == name):
+        process.kill()
 
-try:
-    if args.samplerate is None:
-        device_info = sd.query_devices(args.device, "input")
-        # soundfile expects an int, sounddevice provides a float:
-        args.samplerate = int(device_info["default_samplerate"])
+def evaluate(text):
+
+        # Reconhecimento da entidade de texto
+    
+    entity = classify(text)
+
+    if entity == 'time|getTime':
+        speak(core.SystemInfo.get_time())
+    elif entity == 'time|getDate':
+        speak(core.SystemInfo.get_date())
+
+        # ABRIR PROGRAMAS ( WINDOWS )
+    
+    elif entity == 'open|notepad':
+        speak('Abrindo o bloco de notas')
+        subprocess.Popen('notepad.exe', shell=True).pid
+    elif entity == 'open|chrome':
+        speak('Abrindo o Google Chrome')
+        os.system('"C:/Program Files/Google/Chrome/Application/chrome.exe"')
+    elif entity == 'open|google':
+        speak('Abrindo o Google')
+        webbrowser.open("www.google.com")
         
-    if args.model is None:
-        model = Model(lang="en-us")
-    else:
-        model = Model(lang=args.model)
+        # Acessos recorrentes no Youtube
+    elif entity == 'open|youtube':
+        speak('Abrindo o Youtube')
+        webbrowser.open("www.youtube.com")
+    elif entity == 'open|lofi':
+        speak('Abrindo o Canal de Música Lofi')
+        webbrowser.open("www.youtube.com/watch?v=92VQEDu72go")
 
-    if args.filename:
-        dump_fn = open(args.filename, "wb")
-    else:
-        dump_fn = None
+        # Redes sociais
+    elif entity == 'open|linkedin':
+        speak('Abrindo o Linkedin')
+        webbrowser.open("www.linkedin.com/feed/")
 
-    with sd.RawInputStream(samplerate=args.samplerate, blocksize = 8000, device=args.device,
-            dtype="int16", channels=1, callback=callback):
-        print("#" * 80)
-        print("Press Ctrl+C to stop the recording")
-        print("#" * 80)
+        # FECHAR PROGRAMAS
 
-        rec = KaldiRecognizer(model, args.samplerate)
-        while True:
-            data = q.get()
-            if rec.AcceptWaveform(data):
-                print(rec.Result())
-            else:
-                print(rec.PartialResult())
-            if dump_fn is not None:
-                dump_fn.write(data)
+    elif entity == 'close|notepad':
+        speak('Fechando o bloco de notas')
+        close_program('notepad.exe')
+    
+    print(text)
 
-except KeyboardInterrupt:
-    print("\nDone")
-    parser.exit(0)
-except Exception as e:
-    parser.exit(type(e).__name__ + ": " + str(e))
+# Reconhecimento de fala
+
+model = Model('model')
+rec = KaldiRecognizer(model, 16000)
+
+p = pyaudio.PyAudio()
+stream = p.open(format=pyaudio.paInt16, channels=1, rate=16000, input=True, frames_per_buffer=2048)
+stream.start_stream()
+
+# Loop do reconhecimento de fala
+while True:
+    data = stream.read(2048)
+    if len(data) == 0:
+        break
+    if rec.AcceptWaveform(data):
+        result = rec.Result()
+        result = json.loads(result)
+
+        if result is not None:
+            text = result['text']
+            evaluate(text)
