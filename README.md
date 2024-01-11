@@ -34,3 +34,8 @@ O assistente virtual ao qual me propus a criar é uma inteligência artificial c
     Caso ocorra um problema para instalar o PyAudio use: pip install PyAudio
     Após instalar todas as dependências certifique-se de estar com uma headset conectado na máquina que está usando (pois precisará usar um microfone e fone).
     Por fim, execute o Assistente usando o comando: python main.py
+
+---
+
+#### Projeto principal (aulas no Youtube):
+https://www.youtube.com/playlist?list=PL39zyvnHdXh8fkuWqzucS93REYaNEJVRx
